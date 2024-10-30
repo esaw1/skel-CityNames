@@ -22,7 +22,7 @@ public class CityNetwork {
             }
             for (CityTLA city2 : _cities) {
                 if (!city2.equals(city1)
-                 && Utils.isValidCode(city2._cityName, city1._cityCode)) {
+                    && Utils.isValidCode(city2._cityName, city1._cityCode)) {
                     return false;
                 }
             }
@@ -31,7 +31,6 @@ public class CityNetwork {
     }
 
     /**
-     *
      * @param cityNames is not null and only contains strings with upper-case alphabets and spaces
      * @return a {@code CityNetwork} instance with the maximum number of cities from {@code cityNames} that can have ambiguity-free TLAs
      */
@@ -39,14 +38,43 @@ public class CityNetwork {
         Map<String, Set<String>> codeMap = new HashMap<>();
         Set<String> nameSet = new HashSet<>(cityNames);
 
-        for (String cityName : nameSet) {
-            if (cityName.length() < 3) {
+        for (String cityName : cityNames) {
+            if (nameSet.contains(cityName) && cityName.length() < 3) {
                 nameSet.remove(cityName);
             } else {
                 codeMap.put(cityName, getCodeSet(cityName));
             }
         }
 
+        CityNetwork cityNet = getNetwork(nameSet, codeMap);
+        return buildLongestNetwork(nameSet, codeMap, cityNet, cityNet);
+    }
+
+    private static CityNetwork buildLongestNetwork(Set<String> nameSet,
+                                                   Map<String, Set<String>> codeMap,
+                                                   CityNetwork longestNet,
+                                                   CityNetwork currentNet
+    ) {
+        if (currentNet._cities.size() > longestNet._cities.size()) {
+            longestNet._cities.clear();
+            longestNet._cities.addAll(currentNet._cities);
+            return currentNet;
+        }
+        if (nameSet.size() < longestNet._cities.size()) {
+            return longestNet;
+        }
+
+        for (String cityName : nameSet) {
+            Set<String> testSet = new HashSet<>(nameSet);
+            testSet.remove(cityName);
+            currentNet = getNetwork(testSet, codeMap);
+            return buildLongestNetwork(testSet, codeMap, longestNet, currentNet);
+        }
+
+        return longestNet;
+    }
+
+    private static CityNetwork getNetwork(Set<String> nameSet, Map<String, Set<String>> codeMap) {
         CityNetwork cityNet = new CityNetwork();
         for (String cityName1 : nameSet) {
             for (String testCode : codeMap.get(cityName1)) {
@@ -63,13 +91,11 @@ public class CityNetwork {
                 }
                 if (valid) {
                     cityNet._cities.add(new CityTLA(cityName1, testCode));
-                    System.out.println(cityName1);
-                    System.out.println(testCode);
                     break;
                 }
             }
-            System.out.println();
         }
+
         return cityNet;
     }
 
@@ -79,8 +105,8 @@ public class CityNetwork {
             for (int end = start + 2; end < cityName.length(); end++) {
                 for (int middle = start + 1; middle < end; middle++) {
                     String code = cityName.charAt(start) + "" +
-                                  cityName.charAt(middle) +
-                                  cityName.charAt(end);
+                        cityName.charAt(middle) +
+                        cityName.charAt(end);
                     if (code.matches("[A-Z]{3}")) {
                         possibleCodes.add(code);
                     }
