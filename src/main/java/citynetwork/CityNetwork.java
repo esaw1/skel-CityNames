@@ -46,11 +46,13 @@ public class CityNetwork {
             }
         }
 
-        CityNetwork cityNet = getNetwork(nameSet, codeMap);
-        return buildLongestNetwork(nameSet, codeMap, cityNet, cityNet);
+        CityNetwork startNet = getNetwork(nameSet, codeMap);
+        CityNetwork longestNet = new CityNetwork();
+        buildLongestNetwork(nameSet, codeMap, longestNet, startNet);
+        return longestNet;
     }
 
-    private static CityNetwork buildLongestNetwork(Set<String> nameSet,
+    private static void buildLongestNetwork(Set<String> nameSet,
                                                    Map<String, Set<String>> codeMap,
                                                    CityNetwork longestNet,
                                                    CityNetwork currentNet
@@ -58,20 +60,17 @@ public class CityNetwork {
         if (currentNet._cities.size() > longestNet._cities.size()) {
             longestNet._cities.clear();
             longestNet._cities.addAll(currentNet._cities);
-            return currentNet;
         }
         if (nameSet.size() < longestNet._cities.size()) {
-            return longestNet;
+            return;
         }
 
         for (String cityName : nameSet) {
             Set<String> testSet = new HashSet<>(nameSet);
             testSet.remove(cityName);
             currentNet = getNetwork(testSet, codeMap);
-            return buildLongestNetwork(testSet, codeMap, longestNet, currentNet);
+            buildLongestNetwork(testSet, codeMap, longestNet, currentNet);
         }
-
-        return longestNet;
     }
 
     private static CityNetwork getNetwork(Set<String> nameSet, Map<String, Set<String>> codeMap) {
