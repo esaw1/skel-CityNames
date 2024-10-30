@@ -37,18 +37,26 @@ public class CityNetwork {
      */
     public static final CityNetwork buildNetwork(List<String> cityNames) {
         Map<String, Set<String>> codeMap = new HashMap<>();
-        for (String cityName : cityNames) {
-            codeMap.put(cityName, getCodeSet(cityName));
+        Set<String> nameSet = new HashSet<>(cityNames);
+
+        for (String cityName : nameSet) {
+            if (cityName.length() < 3) {
+                nameSet.remove(cityName);
+            } else {
+                codeMap.put(cityName, getCodeSet(cityName));
+            }
         }
 
         CityNetwork cityNet = new CityNetwork();
-        for (int i = 0; i < cityNames.size(); i++) {
-            String cityName1 = cityNames.get(i);
-            boolean valid = true;
+        for (String cityName1 : nameSet) {
             for (String testCode : codeMap.get(cityName1)) {
-                for (int j = 0; j < cityNames.size(); j++) {
-                    String cityName2 = cityNames.get(j);
-                    if (i != j && Utils.isValidCode(cityName2, testCode)) {
+                boolean valid = true;
+                for (String cityName2 : nameSet) {
+                    if (cityName1.equals(cityName2)) {
+                        if (nameSet.size() == 1) {
+                            break;
+                        }
+                    } else if (Utils.isValidCode(cityName2, testCode)) {
                         valid = false;
                         break;
                     }
@@ -73,7 +81,9 @@ public class CityNetwork {
                     String code = cityName.charAt(start) + "" +
                                   cityName.charAt(middle) +
                                   cityName.charAt(end);
-                    possibleCodes.add(code);
+                    if (code.matches("[A-Z]{3}")) {
+                        possibleCodes.add(code);
+                    }
                 }
             }
         }
